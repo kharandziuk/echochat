@@ -1,0 +1,18 @@
+{
+  "name": "echochat",
+  "version": "0.0.1",
+  "description": "A small echo chat application written with node.js and websockets",
+  "main": "index.js",
+  "repository": "https://github.com/kharandziuk/echochat",
+  "license": "MIT",
+  "dependencies": {
+    "chai": "^4.1.2",
+    "debug": "^3.1.0",
+    "express": "^4.16.3",
+    "mocha": "^5.2.0",
+    "ws": "^6.0.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  }
+}
