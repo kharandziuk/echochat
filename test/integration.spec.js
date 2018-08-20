@@ -1,9 +1,10 @@
 const WebSocket = require('ws');
 const debug = require('debug')
+const { expect }= require('chai')
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms)) 
 const collectEvents = (eventEmmiter, eventName, count=1) => {
-  const _debug = debug('app:colletEvents')
-  _debug('set colletEvents', eventName)
+  const _debug = debug('app:collectEvents')
   return new Promise((resolve) => {
     const result = []
     const listener = (msg) => {
@@ -20,43 +21,39 @@ const collectEvents = (eventEmmiter, eventName, count=1) => {
 
 const createClient = () => {
   const cDebug = debug('app:client')
-  const ws = new WebSocket('ws://localhost:8080');
-  return new Promise((resolve, reject) => {
-    ws.on('open', () => {
-      cDebug('open')
-      resolve(ws)
-    })
-  })}
+  const ws = new WebSocket('ws://localhost:8080')
+  return collectEvents(ws, 'open').then(() => ws)
+}
 
-
-
-let wss
-before('before', function() {
+const createServer = () => {
   const sDebug = debug('app:server')
-  wss = new WebSocket.Server({ port: 8080 });
+  const server = new WebSocket.Server({ port: 8080 });
 
-  wss.on('connection', function connection(ws) {
+  server.on('connection', function connection(ws) {
+    for (let each of server.clients) {
+      if (ws !== each) {
+        each.send('client is connected')
+      }
+    }
     sDebug('connection')
-    ws.on('message', function incoming(message) {
-      console.log('received: %s', message);
-      ws.send('something');
-    });
-
-    sDebug('server send')
   });
+  return server
+}
+
+let server
+before('before', function() {
+  server = createServer()
 })
 
-it('the test', async function() {
-  const client =  await createClient()
-
-  const pr = collectEvents(client, 'message')
-  client.on('message', function incoming(message) {
-    console.log('client received: %s', message);
-  });
-  client.send('something')
-  const [msg] = await pr
+it('Client receive message about connected clients', async function() {
+  const client1 =  await createClient()
+  await delay(100)
+  const expectation = collectEvents(client1, 'message')
+  const client2 =  await createClient()
+  const [msg] = await expectation
+  expect(msg).eql('client is connected')
 })
 
 after('after', function() {
-  wss.close()
+  server.close()
 })
