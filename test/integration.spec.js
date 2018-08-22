@@ -22,7 +22,12 @@ const collectEvents = (eventEmmiter, eventName, count=1) => {
 const createClient = () => {
   const cDebug = debug('app:client')
   const ws = new WebSocket('ws://localhost:8080')
-  return collectEvents(ws, 'open').then(() => ws)
+  return collectEvents(ws, 'open').then(() => {
+    connect: (id) => {
+      ws.send('connect' + id)
+    },
+    ws
+  })
 }
 
 const createServer = () => {
@@ -30,12 +35,9 @@ const createServer = () => {
   const server = new WebSocket.Server({ port: 8080 });
 
   server.on('connection', function connection(ws) {
-    for (let each of server.clients) {
-      if (ws !== each) {
-        each.send('client is connected')
-      }
-    }
-    sDebug('connection')
+    ws.on('message', (message) => {
+      sDebug('mesage from ', message)
+    })
   });
   return server
 }
@@ -48,11 +50,14 @@ before('before', function() {
 it('Client receive message about connected clients', async function() {
   const client1 =  await createClient()
   await delay(100)
-  const expectation = collectEvents(client1, 'message')
+  const expectation = collectEvents(client1.ws, 'message')
   const client2 =  await createClient()
+  client2.connect()
+
   const [msg] = await expectation
   expect(msg).eql('client is connected')
 })
+
 
 after('after', function() {
   server.close()
