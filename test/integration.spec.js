@@ -33,37 +33,6 @@ const getId = () => {
 
 
 
-const createServer = () => {
-  const sDebug = debug('app:server')
-  const server = new WebSocket.Server({ port: 8080 });
-
-  server.on('connection', function connection(ws) {
-    const id = getId()
-    for (otherWs of server.clients) {
-      if (otherWs === ws) {
-        continue
-      }
-      otherWs.send(`client ${id} is connected`)
-    }
-    ws.on('message', (message) => {
-      for (otherWs of server.clients) {
-        if (otherWs === ws) {
-          continue
-        }
-        otherWs.send(`client ${id} said: ${message}`)
-      }
-    })
-    ws.on('close', () => {
-      for (otherWs of server.clients) {
-        if (otherWs === ws || otherWs.readyState !== 1) {
-          continue
-        }
-        otherWs.send(`client ${id} is closed`)
-      }
-    })
-  });
-  return server
-}
 
 let server
 beforeEach('before', function() {
