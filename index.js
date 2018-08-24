@@ -1,11 +1,13 @@
-const WebSocket = require('ws');
+const path = require('path')
+const express = require('express')
+const app = express()
 
-const wss = new WebSocket.Server({ port: 8080 });
+const publicDir = path.join(__dirname, 'public')
 
-wss.on('connection', function connection(ws) {
-    ws.on('message', function incoming(message) {
-          console.log('received: %s', message);
-        });
-
-    ws.send('something');
+app.use('/public', express.static(publicDir))
+app.get('/', function(req, res) {
+      res.sendFile(path.join(publicDir, 'index.html'));
 });
+
+
+app.listen(process.env.PORT, () => console.log('Example app listening on port 3000!'))
