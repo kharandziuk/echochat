@@ -7,18 +7,6 @@ const app = express()
 
 const publicDir = path.join(__dirname, 'public')
 
-const recursivePing = (wss) => {
-  setInterval(
-    () => {
-      wss.clients.forEach((client) => {
-        client.send('ping ' + new Date().toTimeString())
-      });
-      recursivePing(wss)
-    },
-    1000
-  );
-}
-
 let clienId = 0
 const getId = () => {
   clienId = clienId + 1
@@ -29,7 +17,6 @@ const createSocketServer = (server) => {
   const sDebug = debug('app:server')
   const wsserver = new WebSocket.Server({ server });
 
-  recursivePing(wsserver)
   wsserver.on('connection', function connection(ws) {
     const id = getId()
     for (otherWs of wsserver.clients) {

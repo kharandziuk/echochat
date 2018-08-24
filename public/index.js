@@ -1,14 +1,25 @@
-var HOST = location.origin.replace(/^http/, 'ws')
-console.log(HOST)
-var ws = new WebSocket(HOST);
-var el = document.getElementById('server-time');
+const HOST = location.origin.replace(/^http/, 'ws')
+const ws = new WebSocket(HOST);
+
+const $newMessage = $('#new-message')
+const $btnSend = $('#btn-send')
+const $messages = $('#messages')
+
+$btnSend.on('click', () => {
+  const message = $newMessage.val()
+  if (!message) {
+    return
+  }
+  ws.send(message)
+  showMessage(`you said: ${message}`)
+})
+
+const showMessage = (msg) => {
+  $messages.append(
+    `<span>${msg}<br></span>`
+  )
+}
 
 ws.onmessage = function (event) {
-  el.innerHTML = 'Server time: ' + event.data;
-};var HOST = location.origin.replace(/^http/, 'ws')
-var ws = new WebSocket(HOST);
-var el = document.getElementById('server-time');
-
-ws.onmessage = function (event) {
-  el.innerHTML = 'Server time: ' + event.data;
+ showMessage(event.data)
 };
